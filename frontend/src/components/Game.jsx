@@ -32,4 +32,7 @@ function Game() {
   );
 }
 
+//Logica para ver palabra
+
+
 export default Game;
