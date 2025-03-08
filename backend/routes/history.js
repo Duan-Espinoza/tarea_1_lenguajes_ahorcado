@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db/database'); // Importar la conexión a la base de datos
+const db = require('../db/database');
 
-// Obtener todo el historial de partidas
+// Obtener historial de partidas
 router.get('/', (req, res) => {
   db.all(
     'SELECT * FROM partidas ORDER BY fecha DESC',
@@ -16,29 +16,64 @@ router.get('/', (req, res) => {
   );
 });
 
-// Guardar nueva partida en el historial
+// Guardar nueva partida
 router.post('/', (req, res) => {
-  const { jugador1, jugador2, ganador, rondas, tiempo } = req.body;
+  const { 
+    jugador1,
+    jugador2,
+    ganador,
+    rondas,
+    tiempo,
+    tiempos_jugador1 = 0,    // Valor por defecto si no se envía
+    tiempos_jugador2 = 0,     // Valor por defecto si no se envía
+    rondas_completadas_jugador1 = 0,  // Valor por defecto si no se envía
+    rondas_completadas_jugador2 = 0   // Valor por defecto si no se envía
+  } = req.body;
 
-  // Validación básica
+  // Validación mejorada
   if (!jugador1 || !jugador2 || !rondas || !tiempo) {
-    return res.status(400).json({ error: 'Datos incompletos' });
+    return res.status(400).json({ error: 'Datos obligatorios faltantes' });
   }
 
+  // Query actualizada con nuevos campos
   db.run(
-    `INSERT INTO partidas 
-      (jugador1, jugador2, ganador, rondas, tiempo) 
-      VALUES (?, ?, ?, ?, ?)`,
-    [jugador1, jugador2, ganador, rondas, tiempo],
+    `INSERT INTO partidas (
+      jugador1, 
+      jugador2, 
+      ganador, 
+      rondas, 
+      tiempo,
+      tiempos_jugador1,
+      tiempos_jugador2,
+      rondas_completadas_jugador1,
+      rondas_completadas_jugador2
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      jugador1,
+      jugador2,
+      ganador,
+      rondas,
+      tiempo,
+      tiempos_jugador1,
+      tiempos_jugador2,
+      rondas_completadas_jugador1,
+      rondas_completadas_jugador2
+    ],
     function(err) {
       if (err) {
         console.error('Error al guardar partida:', err.message);
-        return res.status(500).json({ error: 'Error al guardar partida' });
+        return res.status(500).json({ 
+          error: 'Error al guardar en la base de datos',
+          detalle: err.message 
+        });
       }
       
       res.status(201).json({
         id: this.lastID,
-        mensaje: 'Partida guardada exitosamente'
+        jugador1,
+        jugador2,
+        tiempo_total: tiempo,
+        mensaje: 'Partida registrada exitosamente'
       });
     }
   );
