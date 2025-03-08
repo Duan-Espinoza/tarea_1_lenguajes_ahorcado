@@ -1,0 +1,33 @@
+/* Game.css */
+.game-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .keyboard {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: 5px;
+    margin-top: 20px;
+  }
+  
+  .keyboard button {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  .keyboard button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+  }
+  
+  .hangman-section {
+    margin: 20px 0;
+  }
