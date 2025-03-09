@@ -10,77 +10,104 @@ function Game() {
   const [letrasAdivinadas, setLetrasAdivinadas] = useState([]);
   const [errores, setErrores] = useState(0);
   const [mensajeFinal, setMensajeFinal] = useState('');
+  const [contador, setContador] = useState(5);
 
-  // Obtener palabra actual y mostrar progreso
-  const palabraActual = partida?.palabras[partida.ronda % 2];
+  // Efecto para el countdown de redirección
+  useEffect(() => {
+    if (mensajeFinal) {
+      const intervalo = setInterval(() => setContador(prev => prev - 1), 1000);
+      const timeout = setTimeout(() => {
+        setPartida(null);
+        setMensajeFinal('');
+        setContador(5);
+      }, 5000);
+
+      return () => {
+        clearInterval(intervalo);
+        clearTimeout(timeout);
+      };
+    }
+  }, [mensajeFinal]);
+
+  // Lógica del juego
+  const palabraActual = partida?.palabras[partida.ronda % 2]?.toLowerCase();
   const palabraMostrada = palabraActual?.split('')
     .map(letra => letrasAdivinadas.includes(letra) ? letra : '_ ')
     .join('');
 
-  // Lógica de desempate
   const determinarGanador = () => {
-    const jugador1 = partida.jugadores[0];
-    const jugador2 = partida.jugadores[1];
-    
-    // Si un jugador completó más rondas
-    if (partida.rondasCompletadas[jugador1] > partida.rondasCompletadas[jugador2]) return jugador1;
-    if (partida.rondasCompletadas[jugador2] > partida.rondasCompletadas[jugador1]) return jugador2;
-    
-    // Si empatan en rondas, comparar tiempo
+    const [jugador1, jugador2] = partida.jugadores;
+    const rondasJ1 = partida.rondasCompletadas[jugador1] || 0;
+    const rondasJ2 = partida.rondasCompletadas[jugador2] || 0;
+
+    if (rondasJ1 !== rondasJ2) return rondasJ1 > rondasJ2 ? jugador1 : jugador2;
     return partida.tiempos[jugador1] < partida.tiempos[jugador2] ? jugador1 : jugador2;
   };
 
-  // Efecto para controlar fin de ronda/juego
+  const adivinarLetra = (letra) => {
+    if (!letrasAdivinadas.includes(letra)) {
+      const nuevasLetras = [...letrasAdivinadas, letra];
+      setLetrasAdivinadas(nuevasLetras);
+      if (!palabraActual?.includes(letra)) setErrores(prev => prev + 1);
+    }
+  };
+
   useEffect(() => {
     if (palabraActual && palabraActual.split('').every(letra => letrasAdivinadas.includes(letra))) {
       const nuevoEstado = { ...partida };
-      
-      // Registrar tiempo y rondas completadas
       const jugadorActual = partida.jugadores[partida.ronda % 2];
+
       nuevoEstado.tiempos[jugadorActual] = (Date.now() - partida.tiempoInicio) / 1000;
       nuevoEstado.rondasCompletadas[jugadorActual] = (nuevoEstado.rondasCompletadas[jugadorActual] || 0) + 1;
 
-      if (partida.ronda < 1) { // Cambiar de ronda (0-indexed)
+      if (partida.ronda < 1) {
         nuevoEstado.ronda += 1;
+        setPartida(nuevoEstado);
         setLetrasAdivinadas([]);
         setErrores(0);
-        setPartida(nuevoEstado);
-      } else { // Finalizar juego
+      } else {
         const ganador = determinarGanador();
         setMensajeFinal(ganador ? `¡Ganó ${ganador}!` : '¡Empate!');
-        
-        // Guardar en historial
         axios.post('http://localhost:5000/api/history', {
           jugador1: partida.jugadores[0],
           jugador2: partida.jugadores[1],
           ganador,
           rondas: 2,
-          tiempo: (Date.now() - partida.tiempoInicio) / 1000
+          tiempo: (Date.now() - partida.tiempoInicio) / 1000,
+          tiempos_jugador1: partida.tiempos[partida.jugadores[0]],
+          tiempos_jugador2: partida.tiempos[partida.jugadores[1]],
+          rondas_completadas_jugador1: partida.rondasCompletadas[partida.jugadores[0]],
+          rondas_completadas_jugador2: partida.rondasCompletadas[partida.jugadores[1]]
         });
-        
-        // Reiniciar juego después de 5 segundos
-        setTimeout(() => {
-          setPartida(null);
-          setMensajeFinal('');
-        }, 5000);
       }
     }
   }, [letrasAdivinadas]);
 
-  // Iniciar nueva partida
   const iniciarPartida = async () => {
+    if (!jugadores.jugador1 || !jugadores.jugador2) {
+      alert('¡Ingresa ambos nombres!');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:5000/api/game/nueva-partida', jugadores);
       setPartida({
         ...response.data,
-        tiempos: {},
-        rondasCompletadas: {},
+        tiempos: { 
+          [response.data.jugadores[0]]: 0, 
+          [response.data.jugadores[1]]: 0 
+        },
+        rondasCompletadas: { 
+          [response.data.jugadores[0]]: 0, 
+          [response.data.jugadores[1]]: 0 
+        },
         tiempoInicio: Date.now()
       });
       setLetrasAdivinadas([]);
       setErrores(0);
     } catch (error) {
       console.error('Error al iniciar partida:', error);
+      alert('Error al crear partida. Intenta nuevamente.');
     }
   };
 
@@ -90,11 +117,13 @@ function Game() {
         <div className="configuracion">
           <input
             placeholder="Jugador 1"
-            onChange={(e) => setJugadores({ ...jugadores, jugador1: e.target.value })}
+            value={jugadores.jugador1}
+            onChange={(e) => setJugadores(prev => ({ ...prev, jugador1: e.target.value }))}
           />
           <input
             placeholder="Jugador 2"
-            onChange={(e) => setJugadores({ ...jugadores, jugador2: e.target.value })}
+            value={jugadores.jugador2}
+            onChange={(e) => setJugadores(prev => ({ ...prev, jugador2: e.target.value }))}
           />
           <button onClick={iniciarPartida}>Iniciar Partida</button>
         </div>
@@ -103,15 +132,13 @@ function Game() {
       {partida && (
         <div className="juego-activo">
           <HangmanDrawing errors={errores} />
-          
           <div className="estado-juego">
             <h3>Turno: {partida.jugadores[partida.ronda % 2]}</h3>
             <div className="palabra">{palabraMostrada}</div>
             <p>Intentos restantes: {6 - errores}</p>
           </div>
-
           <Keyboard
-            onKeyPress={(letra) => adivinarLetra(letra.toLowerCase())}
+            onKeyPress={adivinarLetra}
             disabledLetters={letrasAdivinadas}
           />
         </div>
@@ -120,7 +147,13 @@ function Game() {
       {mensajeFinal && (
         <div className="resultado-final">
           <h2>{mensajeFinal}</h2>
-          <p>Redirigiendo al menú principal...</p>
+          <p className="contador-redireccion">Redirigiendo en {contador} segundos...</p>
+          <div className="progress-bar">
+            <div 
+              className="progress" 
+              style={{ width: `${(contador / 5) * 100}%` }}
+            />
+          </div>
         </div>
       )}
     </div>

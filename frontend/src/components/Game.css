@@ -1,33 +1,171 @@
 /* Game.css */
 .game-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Estilos del teclado */
+.keyboard {
+  display: grid;
+  grid-template-columns: repeat(13, 1fr);
+  gap: 5px;
+  margin-top: 20px;
+}
+
+.keyboard button {
+  padding: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: transform 0.1s ease;
+}
+
+.keyboard button:hover:not(:disabled) {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.keyboard button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Sección del ahorcado */
+.hangman-section {
+  margin: 20px 0;
+  padding: 20px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Juego activo */
+.juego-activo {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+/* Configuración inicial */
+.configuracion {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+.configuracion input {
+  padding: 12px;
+  border: 2px solid #007bff;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.configuracion input:focus {
+  outline: none;
+  border-color: #0056b3;
+}
+
+.configuracion button {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.configuracion button:hover {
+  background-color: #0056b3;
+  transform: translateY(-2px);
+}
+
+/* Resultado final con animación */
+.resultado-final {
+  background-color: rgba(0, 0, 0, 0.95);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  animation: fadeIn 0.5s ease-in;
+  z-index: 1000;
+  width: 80%;
+  max-width: 400px;
+  backdrop-filter: blur(5px);
+}
+
+.resultado-final h2 {
+  color: #4CAF50;
+  margin-bottom: 15px;
+  font-size: 24px;
+}
+
+/* Barra de progreso mejorada */
+.progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+  margin: 15px 0;
+  overflow: hidden;
+}
+
+.progress {
+  height: 100%;
+  background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+  transition: width 1s linear;
+  border-radius: 3px;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translate(-50%, -45%) scale(0.9);
   }
-  
-  .keyboard {
-    display: grid;
-    grid-template-columns: repeat(13, 1fr);
-    gap: 5px;
-    margin-top: 20px;
+  to { 
+    opacity: 1; 
+    transform: translate(-50%, -50%) scale(1);
   }
-  
-  .keyboard button {
-    padding: 10px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-  }
-  
-  .keyboard button:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-  
-  .hangman-section {
-    margin: 20px 0;
-  }
+}
+
+/* Estado del juego */
+.estado-juego {
+  margin: 20px 0;
+}
+
+.palabra {
+  font-size: 24px;
+  letter-spacing: 8px;
+  margin: 20px 0;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Texto de cuenta regresiva */
+.contador-redireccion {
+  color: #ffffff;
+  font-size: 14px;
+  margin-top: 10px;
+  opacity: 0.8;
+}
