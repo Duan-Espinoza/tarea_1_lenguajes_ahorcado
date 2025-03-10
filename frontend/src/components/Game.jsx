@@ -83,6 +83,32 @@ function Game() {
     }
   }, [letrasAdivinadas]);
 
+
+  // Dentro del componente Game (intentos)
+  useEffect(() => {
+    if (errores >= 6) {
+      const ganador = partida.jugadores[partida.ronda % 2 === 0 ? 1 : 0]; // Jugador contrario
+      setMensajeFinal(`¡Game Over! Ganó ${ganador}`);
+      
+      axios.post('http://localhost:5000/api/history', {
+        jugador1: partida.jugadores[0],
+        jugador2: partida.jugadores[1],
+        ganador,
+        rondas: partida.ronda + 1,
+        tiempo: (Date.now() - partida.tiempoInicio) / 1000,
+        tiempos_jugador1: partida.tiempos[partida.jugadores[0]],
+        tiempos_jugador2: partida.tiempos[partida.jugadores[1]],
+        rondas_completadas_jugador1: partida.rondasCompletadas[partida.jugadores[0]],
+        rondas_completadas_jugador2: partida.rondasCompletadas[partida.jugadores[1]]
+      });
+
+      setTimeout(() => {
+        setPartida(null);
+        setMensajeFinal('');
+      }, 5000);
+    }
+  }, [errores]);
+
   const iniciarPartida = async () => {
     if (!jugadores.jugador1 || !jugadores.jugador2) {
       alert('¡Ingresa ambos nombres!');

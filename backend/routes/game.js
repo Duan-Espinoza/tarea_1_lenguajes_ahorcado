@@ -14,7 +14,7 @@ router.post('/nueva-partida', (req, res) => {
   const partida = {
     jugadores,
     palabras: [palabraJugador1, palabraJugador2],
-    rondas: 0,
+    ronda: 0, // <-- Nombre correcto
     tiempoInicio: Date.now(),
   };
 
