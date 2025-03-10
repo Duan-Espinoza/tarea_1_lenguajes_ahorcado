@@ -45,10 +45,17 @@ function Game() {
   };
 
   const adivinarLetra = (letra) => {
-    if (!letrasAdivinadas.includes(letra)) {
-      const nuevasLetras = [...letrasAdivinadas, letra];
+    // Normalizar la letra a minúscula
+    const letraNormalizada = letra.toLowerCase();
+  
+    if (!letrasAdivinadas.includes(letraNormalizada)) {
+      const nuevasLetras = [...letrasAdivinadas, letraNormalizada];
       setLetrasAdivinadas(nuevasLetras);
-      if (!palabraActual?.includes(letra)) setErrores(prev => prev + 1);
+      
+      // Verificar si la letra NO está en la palabra (comparación en minúsculas)
+      if (!palabraActual?.includes(letraNormalizada)) {
+        setErrores(prev => prev + 1);
+      }
     }
   };
 
