@@ -22,9 +22,7 @@
   <p align="center">
     I Semestre 2025
   </p> 
-  <p align="center">
-    Aplicación web para jugar 3 en línea.
-  </p> 
+ 
   <p align="center">
   
    
